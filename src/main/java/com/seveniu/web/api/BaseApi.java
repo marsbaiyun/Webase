@@ -137,6 +137,9 @@ public class BaseApi<T extends Pojo> {
             } else if (key.equals("pagesize")) {
                 pageSize = Integer.parseInt(value);
             } else {
+                if (value == null || value.length() == 0) {
+                    continue;
+                }
                 int index = i++;
                 filterColumns[index] = key;
                 filterValues[index] = value;

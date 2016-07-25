@@ -1,17 +1,15 @@
 package com.seveniu.web.api;
 
-import com.seveniu.util.Json;
-import com.seveniu.web.ApiResult;
 import com.seveniu.pojo.Pojo;
 import com.seveniu.service.PermissionBaseService;
+import com.seveniu.util.Json;
+import com.seveniu.web.ApiResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -137,6 +135,9 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
             } else if (key.equals("pagesize")) {
                 pageSize = Integer.parseInt(value);
             } else {
+                if (value == null || value.length() == 0) {
+                    continue;
+                }
                 int index = i++;
                 filterColumns[index] = key;
                 filterValues[index] = value;
