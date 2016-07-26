@@ -31,8 +31,6 @@ import org.springframework.core.env.Environment;
 import java.util.Arrays;
 
 @SpringBootApplication
-@Configuration
-@EnableAutoConfiguration
 @ComponentScan("com.seveniu")
 public class AppWeb {
     private static ApplicationContext ctx;

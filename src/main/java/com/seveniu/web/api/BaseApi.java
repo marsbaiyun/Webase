@@ -1,5 +1,6 @@
 package com.seveniu.web.api;
 
+import com.alibaba.fastjson.TypeReference;
 import com.seveniu.pojo.Pojo;
 import com.seveniu.service.BaseService;
 import com.seveniu.util.Json;
@@ -75,6 +76,19 @@ public class BaseApi<T extends Pojo> {
             return ApiResult.success().toJson();
         } catch (Exception e) {
             e.printStackTrace();
+            return ApiResult.exception(e).toJson();
+        }
+    }
+
+    @RequestMapping(value = "/del-list", method = RequestMethod.DELETE, produces = "text/json;charset=UTF-8")
+    @ResponseBody
+    public String delList(HttpServletRequest request, String ids) {
+        try {
+            List<Integer> idList = Json.parse(ids, new TypeReference<List<Integer>>() {
+            });
+            service.del(idList);
+            return ApiResult.success().toJson();
+        } catch (Exception e) {
             return ApiResult.exception(e).toJson();
         }
     }
