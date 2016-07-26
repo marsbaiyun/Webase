@@ -58,6 +58,10 @@ public class BaseService<T extends Pojo> {
         return dao.limit(start, size, field, orderType);
     }
 
+    public void del(List<Integer> ids) {
+        dao.del(ids);
+    }
+
     public void del(int id) {
         dao.del(id);
     }

@@ -1,17 +1,16 @@
 package com.seveniu.web.api;
 
-import com.seveniu.util.Json;
-import com.seveniu.web.ApiResult;
 import com.seveniu.pojo.Pojo;
 import com.seveniu.service.BaseService;
+import com.seveniu.util.Json;
+import com.seveniu.web.ApiResult;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +43,8 @@ public class BaseApi<T extends Pojo> {
         try {
             int newId = service.insert(field);
             return ApiResult.success().setMessage(newId).toJson();
+        } catch (DuplicateKeyException e) {
+            return ApiResult.get().setCode(ApiResult.EXIST).toJson();
         } catch (Exception e) {
             return ApiResult.exception(e).toJson();
         }
@@ -58,6 +59,8 @@ public class BaseApi<T extends Pojo> {
             }
             service.update(field);
             return ApiResult.success().toJson();
+        } catch (DuplicateKeyException e) {
+            return ApiResult.get().setCode(ApiResult.EXIST).toJson();
         } catch (Exception e) {
             e.printStackTrace();
             return ApiResult.exception(e).toJson();

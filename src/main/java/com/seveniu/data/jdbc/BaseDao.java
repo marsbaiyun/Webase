@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import javax.sql.DataSource;
@@ -121,6 +122,12 @@ public class BaseDao<T extends Pojo> {
         return count > 0;
     }
 
+    public void del(List<Integer> ids) {
+        NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+        Map<String, Object> params = Collections.singletonMap("ids", ids);
+        namedTemplate.update("DELETE FROM " + tableName + " where id in (:ids) ", params);
+    }
+
     public void del(int id) {
         jdbcTemplate.update("DELETE  FROM " + tableName + " where id = ?", new Object[]{id});
     }
@@ -149,7 +156,7 @@ public class BaseDao<T extends Pojo> {
 
     public List<T> limit(int start, int size, String column, String orderType) {
         column = fieldToColumn(column);
-        return jdbcTemplate.query("SELECT * FROM "+this.tableName+"" +
+        return jdbcTemplate.query("SELECT * FROM " + this.tableName + "" +
                 " INNER JOIN" +
                 " (select * from " + tableName + "" +
                 " order by " + column + " " + orderType + "" +
@@ -163,7 +170,7 @@ public class BaseDao<T extends Pojo> {
         StringBuilder sb = new StringBuilder();
         sb.append("select * from ")
                 .append(tableName)
-        .append(" inner join (select id from ").append(tableName);
+                .append(" inner join (select id from ").append(tableName);
         if (filterColumns.length > 0) {
             sb.append(" where ");
             for (int i = 0; i < filterColumns.length; i++) {
@@ -177,7 +184,7 @@ public class BaseDao<T extends Pojo> {
         }
         sb.append(" order by ").append(column).append(" ").append(orderType)
                 .append(" limit ?,?")
-        .append(") as t2 using(id)");
+                .append(") as t2 using(id)");
 
         List<Object> both = new ArrayList<>(2 + filterValues.length);
         Collections.addAll(both, filterValues);

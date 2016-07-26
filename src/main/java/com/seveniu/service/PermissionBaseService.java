@@ -4,8 +4,6 @@ import com.seveniu.data.jdbc.BaseDao;
 import com.seveniu.exception.PermissionException;
 import com.seveniu.pojo.Pojo;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -92,6 +90,16 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
             }
         }
         return list;
+    }
+
+    public void del(U user, List<Integer> ids) {
+        for (Integer id : ids) {
+            T t = baseService.getById(id);
+            if (!isAuthorizationDelete(user, t)) {
+                throw new PermissionException(user, this.getClass(), "del");
+            }
+        }
+        baseService.del(ids);
     }
 
     public void del(U user, int id) {

@@ -4,6 +4,7 @@ import com.seveniu.pojo.Pojo;
 import com.seveniu.service.PermissionBaseService;
 import com.seveniu.util.Json;
 import com.seveniu.web.ApiResult;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,6 +43,8 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
         try {
             int newId = service.insert(getAccessor(request), field);
             return ApiResult.success().setMessage(newId).toJson();
+        } catch (DuplicateKeyException e) {
+            return ApiResult.get().setCode(ApiResult.EXIST).toJson();
         } catch (Exception e) {
             return ApiResult.exception(e).toJson();
         }
@@ -56,6 +59,8 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
             }
             service.update(getAccessor(request), field);
             return ApiResult.success().toJson();
+        } catch (DuplicateKeyException e) {
+            return ApiResult.get().setCode(ApiResult.EXIST).toJson();
         } catch (Exception e) {
             e.printStackTrace();
             return ApiResult.exception(e).toJson();
