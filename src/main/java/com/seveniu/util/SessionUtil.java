@@ -44,12 +44,7 @@ public class SessionUtil {
     }
 
     public static void destroy(HttpSession session) {
-        session.removeAttribute(SESSION_USER_NAME);
-        session.removeAttribute(SESSION_USER_ID);
-        session.removeAttribute(SESSION_USER_GROUP);
-        session.removeAttribute(SESSION_LOGIN_VALID);
-        session.removeAttribute(SESSION_IS_ADMIN);
-        session.removeAttribute(SESSION_IS_OUTER);
+        session.invalidate();
     }
 
     public static void dump(HttpSession session) {
