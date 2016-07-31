@@ -135,12 +135,14 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
         return filterLimit(getAccessor(request), params).toJson();
     }
 
-    private ApiResult filterLimit(U user, FilterLimitParams params) {
+    protected ApiResult filterLimit(U user, FilterLimitParams params) {
         int page = params.getPage() < 1 ? 0 : params.getPage();
         int start = (page - 1) * params.getPageSize();
-        int allCount = service.count(user);
+        String[] filedArray = params.getFieldArray();
+        Object[] valueArray = params.getValueArray();
+        int allCount = service.filterCount(user, filedArray, valueArray);
         List<T> bookList = service.filterLimit(user, start, params.getPageSize(), params.getOrderColumn(),
-                params.getOrderType(), params.getFieldArray(), params.getValueArray());
+                params.getOrderType(), filedArray, valueArray);
         ApiResult result = new ApiResult();
         result.setCode(ApiResult.SUCCESS);
         result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));

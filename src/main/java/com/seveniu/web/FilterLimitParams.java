@@ -1,29 +1,28 @@
 package com.seveniu.web;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Created by seveniu on 7/31/16.
+ * FilterLimitParams
  */
 public class FilterLimitParams {
     private int page;
     private int pageSize;
     private String orderColumn;
     private String orderType;
-    private List<String> fieldList;
-    private List<Object> valueList;
+    private LinkedHashMap<String, Object> otherParams;
 
-    public FilterLimitParams(int page, int pageSize, String orderColumn, String orderType, List<String> fieldList, List<Object> valueList) {
+    private FilterLimitParams(int page, int pageSize, String orderColumn, String orderType, LinkedHashMap<String, Object> otherParams) {
         this.page = page;
         this.pageSize = pageSize;
         this.orderColumn = orderColumn;
         this.orderType = orderType;
-        this.fieldList = fieldList;
-        this.valueList = valueList;
+        this.otherParams = otherParams;
     }
+
 
     public static FilterLimitParams parseFilterLimit(HttpServletRequest request) {
         Map<String, String[]> params = request.getParameterMap();
@@ -31,8 +30,7 @@ public class FilterLimitParams {
         String orderColumn = null;
         String orderType = null;
         int pageSize = -1;
-        List<String> filterColumns = new ArrayList<>();
-        List<Object> filterValues = new ArrayList<>();
+        LinkedHashMap<String, Object> otherParams = new LinkedHashMap<>();
         for (Map.Entry<String, String[]> entry : params.entrySet()) {
 
             String key = entry.getKey();
@@ -46,14 +44,13 @@ public class FilterLimitParams {
             } else if (key.equals("pagesize")) {
                 pageSize = Integer.parseInt(value);
             } else {
-                filterColumns.add(key);
-                filterValues.add(value);
+                otherParams.put(key, value);
             }
         }
         if (page == -1 || orderColumn == null || orderType == null || pageSize == -1) {
             throw new IllegalArgumentException("page or orderColumn or orderType or pagesize error");
         }
-        return new FilterLimitParams(page, pageSize, orderColumn, orderType, filterColumns, filterValues);
+        return new FilterLimitParams(page, pageSize, orderColumn, orderType, otherParams);
     }
 
 
@@ -89,35 +86,34 @@ public class FilterLimitParams {
         this.orderType = orderType;
     }
 
-    public List<String> getFieldList() {
-        return fieldList;
+    public LinkedHashMap<String, Object> getOtherParams() {
+        return otherParams;
+    }
+
+    public void setOtherParams(LinkedHashMap<String, Object> otherParams) {
+        this.otherParams = otherParams;
     }
 
     public String[] getFieldArray() {
-        String[] array = new String[fieldList.size()];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = fieldList.get(i);
+        String[] array = new String[otherParams.size()];
+        int i = 0;
+        for (Map.Entry<String, Object> entry : otherParams.entrySet()) {
+            array[i] = entry.getKey();
+            i++;
         }
         return array;
     }
 
-    public void setFieldList(List<String> fieldList) {
-        this.fieldList = fieldList;
-    }
-
-    public List<Object> getValueList() {
-        return valueList;
-    }
 
     public Object[] getValueArray() {
-        Object[] array = new Object[valueList.size()];
-        for (int i = 0; i < array.length; i++) {
-            array[i] = fieldList.get(i);
+        Object[] array = new Object[otherParams.size()];
+        int i = 0;
+        for (Map.Entry<String, Object> entry : otherParams.entrySet()) {
+            array[i] = entry.getValue();
+            i++;
         }
         return array;
     }
 
-    public void setValueList(List<Object> valueList) {
-        this.valueList = valueList;
-    }
+
 }
