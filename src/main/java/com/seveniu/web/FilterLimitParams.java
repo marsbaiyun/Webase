@@ -1,28 +1,29 @@
 package com.seveniu.web;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by seveniu on 7/31/16.
  */
 public class FilterLimitParams {
-    int page;
-    int pageSize;
-    String orderColumn;
-    String orderType;
-    String[] fieldArray;
-    Object[] valueArray;
+    private int page;
+    private int pageSize;
+    private String orderColumn;
+    private String orderType;
+    private List<String> fieldList;
+    private List<Object> valueList;
 
-    public FilterLimitParams(int page, int pageSize, String orderColumn, String orderType, String[] fieldArray, Object[] valueArray) {
+    public FilterLimitParams(int page, int pageSize, String orderColumn, String orderType, List<String> fieldList, List<Object> valueList) {
         this.page = page;
         this.pageSize = pageSize;
         this.orderColumn = orderColumn;
         this.orderType = orderType;
-        this.fieldArray = fieldArray;
-        this.valueArray = valueArray;
+        this.fieldList = fieldList;
+        this.valueList = valueList;
     }
-
 
     public static FilterLimitParams parseFilterLimit(HttpServletRequest request) {
         Map<String, String[]> params = request.getParameterMap();
@@ -30,11 +31,8 @@ public class FilterLimitParams {
         String orderColumn = null;
         String orderType = null;
         int pageSize = -1;
-
-        int filterSize = params.size() - 4;
-        String[] filterColumns = new String[filterSize];
-        Object[] filterValues = new Object[filterSize];
-        int i = 0;
+        List<String> filterColumns = new ArrayList<>();
+        List<Object> filterValues = new ArrayList<>();
         for (Map.Entry<String, String[]> entry : params.entrySet()) {
 
             String key = entry.getKey();
@@ -48,12 +46,8 @@ public class FilterLimitParams {
             } else if (key.equals("pagesize")) {
                 pageSize = Integer.parseInt(value);
             } else {
-                if (value == null || value.length() == 0) {
-                    continue;
-                }
-                int index = i++;
-                filterColumns[index] = key;
-                filterValues[index] = value;
+                filterColumns.add(key);
+                filterValues.add(value);
             }
         }
         if (page == -1 || orderColumn == null || orderType == null || pageSize == -1) {
@@ -61,7 +55,6 @@ public class FilterLimitParams {
         }
         return new FilterLimitParams(page, pageSize, orderColumn, orderType, filterColumns, filterValues);
     }
-
 
 
     public int getPage() {
@@ -96,19 +89,35 @@ public class FilterLimitParams {
         this.orderType = orderType;
     }
 
-    public String[] getFieldArray() {
-        return fieldArray;
+    public List<String> getFieldList() {
+        return fieldList;
     }
 
-    public void setFieldArray(String[] fieldArray) {
-        this.fieldArray = fieldArray;
+    public String[] getFieldArray() {
+        String[] array = new String[fieldList.size()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = fieldList.get(i);
+        }
+        return array;
+    }
+
+    public void setFieldList(List<String> fieldList) {
+        this.fieldList = fieldList;
+    }
+
+    public List<Object> getValueList() {
+        return valueList;
     }
 
     public Object[] getValueArray() {
-        return valueArray;
+        Object[] array = new Object[valueList.size()];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = fieldList.get(i);
+        }
+        return array;
     }
 
-    public void setValueArray(Object[] valueArray) {
-        this.valueArray = valueArray;
+    public void setValueList(List<Object> valueList) {
+        this.valueList = valueList;
     }
 }
