@@ -5,6 +5,7 @@ import com.seveniu.pojo.Pojo;
 import com.seveniu.service.BaseService;
 import com.seveniu.util.Json;
 import com.seveniu.web.ApiResult;
+import com.seveniu.web.FilterLimitParams;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by seveniu on 6/2/16.
@@ -131,42 +131,10 @@ public class BaseApi<T extends Pojo> {
     @RequestMapping(value = "/list-filter", method = RequestMethod.GET, produces = "text/json;charset=UTF-8")
     @ResponseBody
     public String list(HttpServletRequest request) {
-        Map<String, String[]> params = request.getParameterMap();
-        int page = -1;
-        String orderColumn = null;
-        String orderType = null;
-        int pageSize = -1;
-
-        int filterSize = params.size() - 4;
-        String[] filterColumns = new String[filterSize];
-        Object[] filterValues = new Object[filterSize];
-        int i = 0;
-        for (Map.Entry<String, String[]> entry : params.entrySet()) {
-
-            String key = entry.getKey();
-            String value = entry.getValue()[0];
-            if (key.equals("page")) {
-                page = Integer.parseInt(value);
-            } else if (key.equals("orderColumn")) {
-                orderColumn = value;
-            } else if (key.equals("orderType")) {
-                orderType = value;
-            } else if (key.equals("pagesize")) {
-                pageSize = Integer.parseInt(value);
-            } else {
-                if (value == null || value.length() == 0) {
-                    continue;
-                }
-                int index = i++;
-                filterColumns[index] = key;
-                filterValues[index] = value;
-            }
-        }
-        if (page == -1 || orderColumn == null || orderType == null || pageSize == -1) {
-            return ApiResult.exception(new IllegalArgumentException("page or orderColumn or orderType or pagesize error")).toJson();
-        }
-        return filterLimit(page, orderColumn, orderType, pageSize, filterColumns, filterValues).toJson();
+        FilterLimitParams params = FilterLimitParams.parseFilterLimit(request);
+        return filterLimit(params).toJson();
     }
+
 
     protected ApiResult limit(int page, String orderColumn, String orderType, int pagesize) {
 
@@ -192,5 +160,30 @@ public class BaseApi<T extends Pojo> {
         return result;
     }
 
+    protected ApiResult limit(FilterLimitParams params) {
+
+        int page = params.getPage() < 1 ? 0 : params.getPage();
+        int start = (page - 1) * params.getPageSize();
+        int allCount = service.count();
+        List<T> bookList = service.limit(start, params.getPageSize(), params.getOrderColumn(), params.getOrderType());
+        ApiResult result = new ApiResult();
+        result.setCode(ApiResult.SUCCESS);
+        result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
+        result.setResult(new ApiResult.Result<>(bookList));
+        return result;
+    }
+
+    protected ApiResult filterLimit(FilterLimitParams params) {
+
+        int page = params.getPage() < 1 ? 0 : params.getPage();
+        int start = (page - 1) * params.getPageSize();
+        int allCount = service.count();
+        List<T> bookList = service.filterLimit(start, params.getPageSize(), params.getOrderColumn(), params.getOrderType(), params.getFieldArray(), params.getValueArray());
+        ApiResult result = new ApiResult();
+        result.setCode(ApiResult.SUCCESS);
+        result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
+        result.setResult(new ApiResult.Result<>(bookList));
+        return result;
+    }
 
 }
