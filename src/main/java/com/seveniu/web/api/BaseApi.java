@@ -178,7 +178,8 @@ public class BaseApi<T extends Pojo> {
         int page = params.getPage() < 1 ? 0 : params.getPage();
         int start = (page - 1) * params.getPageSize();
         int allCount = service.count();
-        List<T> bookList = service.filterLimit(start, params.getPageSize(), params.getOrderColumn(), params.getOrderType(), params.getFieldArray(), params.getValueArray());
+        List<T> bookList = service.filterLimit(start, params.getPageSize(), params.getOrderColumn(),
+                params.getOrderType(), params.getFieldArray(), params.getValueArray());
         ApiResult result = new ApiResult();
         result.setCode(ApiResult.SUCCESS);
         result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
