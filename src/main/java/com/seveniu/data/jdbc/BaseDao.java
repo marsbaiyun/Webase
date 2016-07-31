@@ -84,8 +84,7 @@ public class BaseDao<T extends Pojo> {
     public boolean existByColumn(String[] columnNames, Object[] values) {
         columnNames = fieldsToColumns(columnNames);
         String andStr = generateAndWhere(columnNames);
-        int count = jdbcTemplate.queryForObject("select count(*) from " + tableName + " where " + andStr, values, Integer.class);
-        return count > 0;
+        return jdbcTemplate.queryForObject("SELECT EXISTS (select * from " + tableName + " where " + andStr + ")", values, Boolean.class);
     }
 
     private String generateAndWhere(String[] columnNames) {
@@ -118,8 +117,7 @@ public class BaseDao<T extends Pojo> {
 
     public boolean existByColumn(String column, Object value) {
         column = fieldToColumn(column);
-        int count = jdbcTemplate.queryForObject("select count(*) from " + tableName + " where " + column + " = ?", new Object[]{value}, Integer.class);
-        return count > 0;
+        return jdbcTemplate.queryForObject("SELECT EXISTS (select * from " + tableName + " where " + column + " = ?)", new Object[]{value}, Boolean.class);
     }
 
     public void del(List<Integer> ids) {
