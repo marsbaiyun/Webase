@@ -47,16 +47,7 @@ public class BaseDao<T extends Pojo> {
         StringBuilder sb = new StringBuilder();
         sb.append("select count(*) from ")
                 .append(tableName);
-        if (filterColumns.length > 0) {
-            sb.append(" where ");
-            for (int i = 0; i < filterColumns.length; i++) {
-                String filterColumn = filterColumns[i];
-                sb.append(filterColumn).append("=").append("?");
-                if (i + 1 < filterColumns.length) {
-                    sb.append(" and ");
-                }
-            }
-        }
+        buildMultiWhere(sb, filterColumns);
         List<Object> both = new ArrayList<>(filterValues.length);
         Collections.addAll(both, filterValues);
         Object[] values = both.toArray();
@@ -76,6 +67,40 @@ public class BaseDao<T extends Pojo> {
     public T getById(int id) {
         try {
             return jdbcTemplate.queryForObject("select * from " + tableName + " where id = ?", rowMapper, id);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public <K> K getSpecialFieldById(int id, String field, Class<K> clazz) {
+        String column = fieldToColumn(field);
+        return jdbcTemplate.queryForObject("select " + column + " from " + tableName + " where id = ?", clazz, id);
+    }
+
+    public <K> List<K> getSpecialFieldList(String selectField, String[] filterFields, Object[] filterValues, Class<K> clazz) {
+        String[] columns = fieldsToColumns(filterFields);
+        String selectColumn = fieldToColumn(selectField);
+        StringBuilder sb = new StringBuilder();
+        sb.append("select ").append(selectColumn).append(" as ").append(selectColumn)
+                .append(" from ").append(tableName);
+        buildMultiWhere(sb, columns);
+        return jdbcTemplate.queryForList(sb.toString(), filterValues, clazz);
+    }
+
+    public Map<String, Object> getSpecialFieldsById(int id, String[] fields) {
+        try {
+            if (fields.length == 0) {
+                return null;
+            }
+            String[] columnNames = fieldsToColumns(fields);
+            StringBuilder sb = new StringBuilder("select ");
+            for (int i = 0; i < columnNames.length; i++) {
+                String columnName = columnNames[i];
+                sb.append(columnName).append(" as ").append(fields[i]).append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(" from ").append(tableName).append(" where id = ?");
+            return jdbcTemplate.queryForMap(sb.toString(), id);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -127,24 +152,27 @@ public class BaseDao<T extends Pojo> {
     }
 
     public void del(int id) {
-        jdbcTemplate.update("DELETE  FROM " + tableName + " where id = ?", new Object[]{id});
+        jdbcTemplate.update("DELETE  FROM " + tableName + " where id = ?", id);
+    }
+
+    public void delByField(String field, Object fieldValue) {
+        jdbcTemplate.update("DELETE  FROM " + tableName + " where " + field + " = ?", fieldValue);
+    }
+
+    public void delByFields(String[] fields, Object[] fieldValues) {
+        String[] columns = fieldsToColumns(fields);
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE  FROM ").append(tableName);
+        buildMultiWhere(sb, columns);
+        jdbcTemplate.update(sb.toString(), fieldValues);
     }
 
     public List<T> all(String[] filterFields, Object[] values) {
+        String[] columns = fieldsToColumns(filterFields);
         StringBuilder sb = new StringBuilder();
         sb.append("select * from ")
                 .append(tableName);
-        if (filterFields.length > 0) {
-            sb.append(" where ");
-            for (int i = 0; i < filterFields.length; i++) {
-                String filterColumn = filterFields[i];
-
-                sb.append(filterColumn).append("=").append("?");
-                if (i + 1 < filterFields.length) {
-                    sb.append(" and ");
-                }
-            }
-        }
+        buildMultiWhere(sb, columns);
         return jdbcTemplate.query(sb.toString(), values, rowMapper);
     }
 
@@ -169,17 +197,7 @@ public class BaseDao<T extends Pojo> {
         sb.append("select * from ")
                 .append(tableName)
                 .append(" inner join (select id from ").append(tableName);
-        if (filterColumns.length > 0) {
-            sb.append(" where ");
-            for (int i = 0; i < filterColumns.length; i++) {
-                String filterColumn = filterColumns[i];
-
-                sb.append(filterColumn).append("=").append("?");
-                if (i + 1 < filterColumns.length) {
-                    sb.append(" and ");
-                }
-            }
-        }
+        buildMultiWhere(sb, filterColumns);
         sb.append(" order by ").append(column).append(" ").append(orderType)
                 .append(" limit ?,?")
                 .append(") as t2 using(id)");
@@ -277,6 +295,21 @@ public class BaseDao<T extends Pojo> {
             columns[i] = all.getColumn(fields[i]);
         }
         return columns;
+    }
+
+    private void buildMultiWhere(StringBuilder sb, String[] columns) {
+        if (columns.length > 0) {
+            sb.append(" where ");
+            for (int i = 0; i < columns.length; i++) {
+                String filterColumn = columns[i];
+
+                sb.append(filterColumn).append("=").append("?");
+                if (i + 1 < columns.length) {
+                    sb.append(" and ");
+                }
+            }
+            sb.append(" ");
+        }
     }
 
     public String getTableName() {

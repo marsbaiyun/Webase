@@ -4,6 +4,7 @@ import com.seveniu.data.jdbc.BaseDao;
 import com.seveniu.pojo.Pojo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by seveniu on 5/27/16.
@@ -32,6 +33,28 @@ public class BaseService<T extends Pojo> {
         return dao.exist(pojo);
     }
 
+    public <K> K getSpecialFieldById(int id, String field, Class<K> clazz) {
+        return dao.getSpecialFieldById(id, field, clazz);
+    }
+
+    public <K> List<K> getSpecialFieldList(String selectField, String[] filterFields, Object[] filterValues, Class<K> clazz) {
+        return dao.getSpecialFieldList(selectField, filterFields, filterValues, clazz);
+    }
+
+    public Map<String, Object> getSpecialFieldsById(int id, String... fields) {
+        if (fields.length == 0) {
+            return null;
+        }
+        return dao.getSpecialFieldsById(id, fields);
+    }
+
+    public void delByField(String field, Object fieldValue) {
+        dao.delByField(field, fieldValue);
+    }
+
+    public void delByFields(String[] fields, Object[] fieldValues) {
+        dao.delByFields(fields, fieldValues);
+    }
 
     public T getById(int id) {
         return dao.getById(id);

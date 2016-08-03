@@ -5,6 +5,7 @@ import com.seveniu.exception.PermissionException;
 import com.seveniu.pojo.Pojo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by seveniu on 5/27/16.
@@ -31,6 +32,35 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
         return baseService.isExist(pojo);
     }
 
+    public <K> K getSpecialFieldById(U user, int id, String field, Class<K> clazz) {
+        T pojo = baseService.getById(id);
+        if (pojo != null) {
+            if (!isAuthorizationRead(user, pojo)) {
+                throw new PermissionException(user, this.getClass(), "getSpecialFieldById");
+            }
+        }
+        return baseService.getSpecialFieldById(id, field, clazz);
+    }
+
+    public <K> List<K> getSpecialFieldList(U user, String selectField, String[] filterFields, Object[] filterValues, Class<K> clazz) {
+        List<T> list = baseService.all(filterFields, filterValues);
+        for (T t : list) {
+            if (!isAuthorizationRead(user, t)) {
+                throw new PermissionException(user, this.getClass(), "getSpecialFieldList");
+            }
+        }
+        return baseService.getSpecialFieldList(selectField, filterFields, filterValues, clazz);
+    }
+
+    public Map<String, Object> getSpecialFieldsById(U user, int id, String... field) {
+        T pojo = baseService.getById(id);
+        if (pojo != null) {
+            if (!isAuthorizationRead(user, pojo)) {
+                throw new PermissionException(user, this.getClass(), "getById");
+            }
+        }
+        return baseService.getSpecialFieldsById(id, field);
+    }
 
     public T getById(U user, int id) {
         T pojo = baseService.getById(id);
@@ -108,6 +138,21 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
             throw new PermissionException(user, this.getClass(), "del");
         }
         baseService.del(id);
+    }
+
+    public void delByField(U user, String field, Object fieldValue) {
+        delByFields(user, new String[]{field}, new Object[]{fieldValue});
+    }
+
+    public void delByFields(U user, String[] fields, Object[] fieldValues) {
+        List<T> list = baseService.all(fields, fieldValues);
+        for (T t : list) {
+
+            if (!isAuthorizationDelete(user, t)) {
+                throw new PermissionException(user, this.getClass(), "del");
+            }
+        }
+        baseService.delByFields(fields, fieldValues);
     }
 
     public int count(U user) {
