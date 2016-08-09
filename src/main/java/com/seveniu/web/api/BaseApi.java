@@ -156,9 +156,9 @@ public class BaseApi<T extends Pojo> {
         int allCount;
         List<T> list;
         if (params.getLikeField() != null) {
-            allCount = service.filterCount(params.getFieldArray(), params.getValueArray());
+            allCount = service.filterCountLike(params.getFieldArray(), params.getValueArray(), params.getLikeField(), params.getLikeValue());
             list = service.filterLimitLike(start, params.getPageSize(), params.getOrderField(),
-                    params.getOrderType(), params.getFieldArray(), params.getValueArray(),params.getLikeField(),params.getLikeValue());
+                    params.getOrderType(), params.getFieldArray(), params.getValueArray(), params.getLikeField(), params.getLikeValue());
         } else {
             allCount = service.filterCount(params.getFieldArray(), params.getValueArray());
             list = service.filterLimit(start, params.getPageSize(), params.getOrderField(),
