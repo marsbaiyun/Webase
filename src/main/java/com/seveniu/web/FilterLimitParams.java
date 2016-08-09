@@ -57,6 +57,9 @@ public class FilterLimitParams {
             } else if (key.equals("pagesize")) {
                 pageSize = Integer.parseInt(value.trim());
             } else {
+                if (value == null || value.length() == 0) {
+                    continue;
+                }
                 if (key.startsWith("searchField")) {
                     String[] temp = key.split("_");
                     likeField = temp[1];
