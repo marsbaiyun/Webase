@@ -1,0 +1,67 @@
+println("******************")
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+apply plugin: 'maven'
+
+jar {
+    baseName = 'web'
+    version = '0.1.0'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-parent:${springBootVersion}")
+
+    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}")
+    compile('com.alibaba:fastjson:1.2.14')
+
+    testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDir "conf"
+        }
+    }
+}
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file("$buildDir/classes/main/")
+    }
+}
+mainClassName = "com.seveniu.AppWeb"
+
+configurations {
+    deployerJars
+}
+
+
+task wrapper(type: Wrapper) {
+    def version = '2.10'
+    gradleVersion = version
+    distributionUrl = "http://7xnyyx.com1.z0.glb.clouddn.com/gradle-${version}-all.zip"
+}
+println("====================")
