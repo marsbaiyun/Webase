@@ -77,6 +77,21 @@ public class BaseDao<T extends Pojo> {
         return jdbcTemplate.queryForObject("select " + column + " from " + tableName + " where id = ?", clazz, id);
     }
 
+    public List<Map<String, Object>> getSpecialFieldMap(String[] selectFields, String[] filterFields, Object[] filterValues) {
+        String[] columns = fieldsToColumns(filterFields);
+        String[] selectColumns = fieldsToColumns(selectFields);
+        StringBuilder sb = new StringBuilder();
+        sb.append("select ");
+        for (int i = 0; i < selectColumns.length; i++) {
+            String columnName = selectColumns[i];
+            sb.append(columnName).append(" as ").append(selectFields[i]).append(",");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        sb.append(" from ").append(tableName);
+        buildMultiWhere(sb, columns);
+        return jdbcTemplate.queryForList(sb.toString(), filterValues);
+    }
+
     public <K> List<K> getSpecialFieldList(String selectField, String[] filterFields, Object[] filterValues, Class<K> clazz) {
         String[] columns = fieldsToColumns(filterFields);
         String selectColumn = fieldToColumn(selectField);

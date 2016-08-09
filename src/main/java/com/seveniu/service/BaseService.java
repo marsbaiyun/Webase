@@ -41,9 +41,25 @@ public class BaseService<T extends Pojo> {
         return dao.getSpecialFieldList(selectField, filterFields, filterValues, clazz);
     }
 
+    public List<Map<String, Object>> getSpecialFields(String[] selectFields, String[] filterFields, Object[] filterValues) {
+        if (selectFields == null || selectFields.length == 0) {
+            throw new IllegalArgumentException("select fields is null");
+        }
+        if (filterFields == null || filterFields.length == 0) {
+            throw new IllegalArgumentException("select fields is null");
+        }
+        if (filterValues == null || filterValues.length == 0) {
+            throw new IllegalArgumentException("select fields is null");
+        }
+        if (filterFields.length != filterValues.length) {
+            throw new IllegalArgumentException("filter fields length is not equals filter values length");
+        }
+        return dao.getSpecialFieldMap(selectFields, filterFields, filterValues);
+    }
+
     public Map<String, Object> getSpecialFieldsById(int id, String... fields) {
         if (fields.length == 0) {
-            return null;
+            throw new IllegalArgumentException("fields is null");
         }
         return dao.getSpecialFieldsById(id, fields);
     }

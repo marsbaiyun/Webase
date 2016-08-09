@@ -32,16 +32,6 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
         return baseService.isExist(pojo);
     }
 
-    public <K> K getSpecialFieldById(U user, int id, String field, Class<K> clazz) {
-        T pojo = baseService.getById(id);
-        if (pojo != null) {
-            if (!isAuthorizationRead(user, pojo)) {
-                throw new PermissionException(user, this.getClass(), "getSpecialFieldById");
-            }
-        }
-        return baseService.getSpecialFieldById(id, field, clazz);
-    }
-
     public <K> List<K> getSpecialFieldList(U user, String selectField, String[] filterFields, Object[] filterValues, Class<K> clazz) {
         List<T> list = baseService.all(filterFields, filterValues);
         for (T t : list) {
