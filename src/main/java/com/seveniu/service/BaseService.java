@@ -89,6 +89,10 @@ public class BaseService<T extends Pojo> {
         return dao.filterLimit(start, size, fieldName, orderType, filterFields, filterValues);
     }
 
+    public List<T> filterLimitLike(int start, int size, String fieldName, String orderType, String[] filterFields, Object[] filterValues, String likeField, String likeValue) {
+        return dao.filterLimit(start, size, fieldName, orderType, filterFields, filterValues, likeField, likeValue);
+    }
+
     public List<T> filterOneLimit(int start, int size, String column, String orderType, String filterField, Object filterValue) {
         return dao.filterLimit(start, size, column, orderType, new String[]{filterField}, new Object[]{filterValue});
     }
@@ -107,6 +111,10 @@ public class BaseService<T extends Pojo> {
 
     public int count() {
         return dao.count();
+    }
+
+    public int filterCountLike(String[] filterFields, Object[] filterValues, String likeField, String likeValue) {
+        return dao.filterCount(filterFields, filterValues,likeField,likeValue);
     }
 
     public int filterCount(String[] filterFields, Object[] filterValues) {

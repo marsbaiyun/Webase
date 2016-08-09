@@ -148,42 +148,26 @@ public class BaseApi<T extends Pojo> {
         return result;
     }
 
-    protected ApiResult filterLimit(int page, String orderColumn, String orderType, int pagesize, String[] fieldArray, Object[] valueArray) {
-
-        page = page < 1 ? 1 : page;
-        int allCount = service.filterCount(fieldArray, valueArray);
-        List<T> bookList = service.filterLimit((page - 1) * pagesize, pagesize, orderColumn, orderType, fieldArray, valueArray);
-        ApiResult result = new ApiResult();
-        result.setCode(ApiResult.SUCCESS);
-        result.setPage(new ApiResult.Page(page, pagesize, allCount));
-        result.setResult(new ApiResult.Result<>(bookList));
-        return result;
-    }
-
-    protected ApiResult limit(FilterLimitParams params) {
-
-        int page = params.getPage() < 1 ? 0 : params.getPage();
-        int start = (page - 1) * params.getPageSize();
-        int allCount = service.count();
-        List<T> bookList = service.limit(start, params.getPageSize(), params.getOrderColumn(), params.getOrderType());
-        ApiResult result = new ApiResult();
-        result.setCode(ApiResult.SUCCESS);
-        result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
-        result.setResult(new ApiResult.Result<>(bookList));
-        return result;
-    }
 
     protected ApiResult filterLimit(FilterLimitParams params) {
 
         int page = params.getPage() < 1 ? 0 : params.getPage();
         int start = (page - 1) * params.getPageSize();
-        int allCount = service.count();
-        List<T> bookList = service.filterLimit(start, params.getPageSize(), params.getOrderColumn(),
-                params.getOrderType(), params.getFieldArray(), params.getValueArray());
+        int allCount;
+        List<T> list;
+        if (params.getLikeField() != null) {
+            allCount = service.filterCount(params.getFieldArray(), params.getValueArray());
+            list = service.filterLimitLike(start, params.getPageSize(), params.getOrderField(),
+                    params.getOrderType(), params.getFieldArray(), params.getValueArray(),params.getLikeField(),params.getLikeValue());
+        } else {
+            allCount = service.filterCount(params.getFieldArray(), params.getValueArray());
+            list = service.filterLimit(start, params.getPageSize(), params.getOrderField(),
+                    params.getOrderType(), params.getFieldArray(), params.getValueArray());
+        }
         ApiResult result = new ApiResult();
         result.setCode(ApiResult.SUCCESS);
         result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
-        result.setResult(new ApiResult.Result<>(bookList));
+        result.setResult(new ApiResult.Result<>(list));
         return result;
     }
 

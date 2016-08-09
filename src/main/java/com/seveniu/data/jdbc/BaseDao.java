@@ -42,14 +42,44 @@ public class BaseDao<T extends Pojo> {
         return jdbcTemplate.queryForObject("select count(*) from " + tableName, Integer.class);
     }
 
-    public int filterCount(String[] filterColumns, Object[] filterValues) {
-        filterColumns = fieldsToColumns(filterColumns);
+    public int count(String likeField, String likeValue) {
+        String likeColumn = fieldToColumn(likeField);
+        return jdbcTemplate.queryForObject("select count(*) from " + tableName + " WHERE " + likeColumn + " LIKE ?", Integer.class, likeValue);
+    }
+
+    public int filterCount(String[] filterFields, Object[] filterValues) {
+        if (filterFields.length == 0 && filterValues.length == 0) {
+            return count();
+        }
+        if (filterFields.length != filterValues.length) {
+            throw new IllegalArgumentException();
+        }
+        String[] filterColumns = fieldsToColumns(filterFields);
         StringBuilder sb = new StringBuilder();
         sb.append("select count(*) from ")
                 .append(tableName);
         buildMultiWhere(sb, filterColumns);
-        List<Object> both = new ArrayList<>(filterValues.length);
+        return jdbcTemplate.queryForObject(sb.toString(), filterValues, Integer.class);
+    }
+
+    public int filterCount(String[] filterFields, Object[] filterValues, String likeField, String likeValue) {
+        if (filterFields.length == 0 && filterValues.length == 0) {
+            return count(likeField, likeValue);
+        }
+        if (filterFields.length != filterValues.length) {
+            throw new IllegalArgumentException();
+        }
+        String[] filterColumns = fieldsToColumns(filterFields);
+        String likeColumn = fieldToColumn(likeField);
+        StringBuilder sb = new StringBuilder();
+        sb.append("select count(*) from ")
+                .append(tableName);
+        buildMultiWhere(sb, filterColumns);
+        sb.append(" and ").append(likeColumn).append(" like ?");
+
+        List<Object> both = new ArrayList<>(1 + filterValues.length);
         Collections.addAll(both, filterValues);
+        both.add(likeValue);
         Object[] values = both.toArray();
         return jdbcTemplate.queryForObject(sb.toString(), values, Integer.class);
     }
@@ -205,7 +235,54 @@ public class BaseDao<T extends Pojo> {
                 " t2 USING (id)", new Object[]{start, size}, rowMapper);
     }
 
+    public List<T> limit(int start, int size, String column, String orderType, String likeField, String likeValue) {
+        column = fieldToColumn(column);
+        String likeColumn = fieldToColumn(likeField);
+        return jdbcTemplate.query("SELECT * FROM " + this.tableName + "" +
+                " INNER JOIN" +
+                " (select * from " + tableName + "" +
+                " where " + likeColumn + " LIKE ?" +
+                " order by " + column + " " + orderType + "" +
+                " limit ?,?)" +
+                " t2 USING (id)", new Object[]{likeValue, start, size}, rowMapper);
+    }
+
+    public List<T> filterLimit(int start, int size, String column, String orderType, String[] filterColumns, Object[] filterValues, String likeField, String likeValue) {
+        if (filterColumns.length == 0 && filterValues.length == 0) {
+            return limit(start, size, column, orderType, likeField, likeValue);
+        }
+        if (filterColumns.length != filterValues.length) {
+            throw new IllegalArgumentException();
+        }
+        column = fieldToColumn(column);
+        String likeColumn = fieldToColumn(likeField);
+        filterColumns = fieldsToColumns(filterColumns);
+        StringBuilder sb = new StringBuilder();
+        sb.append("select * from ")
+                .append(tableName)
+                .append(" inner join (select id from ").append(tableName);
+        buildMultiWhere(sb, filterColumns);
+        sb.append(" and ").append(likeColumn).append(" like ?")
+                .append(" order by ").append(column).append(" ").append(orderType)
+                .append(" limit ?,?")
+                .append(") as t2 using(id)");
+
+        List<Object> both = new ArrayList<>(3 + filterValues.length);
+        Collections.addAll(both, filterValues);
+        both.add(likeValue);
+        both.add(start);
+        both.add(size);
+        Object[] values = both.toArray();
+        return jdbcTemplate.query(sb.toString(), values, rowMapper);
+    }
+
     public List<T> filterLimit(int start, int size, String column, String orderType, String[] filterColumns, Object[] filterValues) {
+        if (filterColumns.length == 0 && filterValues.length == 0) {
+            return limit(start, size, column, orderType);
+        }
+        if (filterColumns.length != filterValues.length) {
+            throw new IllegalArgumentException();
+        }
         column = fieldToColumn(column);
         filterColumns = fieldsToColumns(filterColumns);
         StringBuilder sb = new StringBuilder();

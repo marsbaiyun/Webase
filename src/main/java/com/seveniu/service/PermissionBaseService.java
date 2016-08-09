@@ -92,6 +92,16 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
         return list;
     }
 
+    public List<T> filterLimitLike(U user, int start, int size, String fieldName, String orderType, String[] filterFields, Object[] filterValues, String likeField, String likeValue) {
+        List<T> list = baseService.filterLimitLike(start, size, fieldName, orderType, filterFields, filterValues, likeField, likeValue);
+        for (T t : list) {
+            if (!isAuthorizationRead(user, t)) {
+                throw new PermissionException(user, this.getClass(), "filterLimitLike");
+            }
+        }
+        return list;
+    }
+
     public List<T> filterOneLimit(U user, int start, int size, String column, String orderType, String filterColumn, Object filterValue) {
         List<T> list = baseService.filterLimit(start, size, column, orderType, new String[]{filterColumn}, new Object[]{filterValue});
         for (T t : list) {
@@ -150,6 +160,13 @@ public abstract class PermissionBaseService<U, T extends Pojo> {
             throw new PermissionException(user, this.getClass(), "filterCount");
         }
         return baseService.count();
+    }
+
+    public int filterCountLike(U user, String[] filterFields, Object[] filterValues, String likeField, String likeValue) {
+        if (!isAuthorizationCount(user)) {
+            throw new PermissionException(user, this.getClass(), "filterCount");
+        }
+        return baseService.filterCountLike(filterFields, filterValues, likeField, likeValue);
     }
 
     public int filterCount(U user, String[] filterColumns, Object[] filterValues) {

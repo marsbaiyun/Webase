@@ -1,6 +1,8 @@
 package com.seveniu.web;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -11,16 +13,25 @@ import java.util.Map;
 public class FilterLimitParams {
     private int page;
     private int pageSize;
-    private String orderColumn;
+    private String orderField;
     private String orderType;
+    private String likeField;
+    private String likeValue;
     private LinkedHashMap<String, Object> otherParams;
 
-    private FilterLimitParams(int page, int pageSize, String orderColumn, String orderType, LinkedHashMap<String, Object> otherParams) {
+    private FilterLimitParams(int page, int pageSize, String orderField, String orderType, LinkedHashMap<String, Object> otherParams, String likeField, String likeValue) {
         this.page = page;
         this.pageSize = pageSize;
-        this.orderColumn = orderColumn;
+        this.orderField = orderField;
         this.orderType = orderType;
         this.otherParams = otherParams;
+        if ((likeField == null || likeField.length() == 0) || (likeValue == null || likeValue.length() == 0)) {
+            this.likeField = null;
+            this.likeValue = null;
+        } else {
+            this.likeField = likeField;
+            this.likeValue = likeValue;
+        }
     }
 
 
@@ -28,6 +39,8 @@ public class FilterLimitParams {
         Map<String, String[]> params = request.getParameterMap();
         int page = -1;
         String orderColumn = null;
+        String likeField = null;
+        String likeValue = null;
         String orderType = null;
         int pageSize = -1;
         LinkedHashMap<String, Object> otherParams = new LinkedHashMap<>();
@@ -38,19 +51,29 @@ public class FilterLimitParams {
             if (key.equals("page")) {
                 page = Integer.parseInt(value);
             } else if (key.equals("orderColumn")) {
-                orderColumn = value;
+                orderColumn = value.trim();
             } else if (key.equals("orderType")) {
-                orderType = value;
+                orderType = value.trim();
             } else if (key.equals("pagesize")) {
-                pageSize = Integer.parseInt(value);
+                pageSize = Integer.parseInt(value.trim());
             } else {
-                otherParams.put(key, value);
+                if (key.startsWith("searchField")) {
+                    String[] temp = key.split("_");
+                    likeField = temp[1];
+                    try {
+                        likeValue = "%" + URLDecoder.decode(value, "utf-8").trim() + "%";
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    otherParams.put(key, value.trim());
+                }
             }
         }
         if (page == -1 || orderColumn == null || orderType == null || pageSize == -1) {
             throw new IllegalArgumentException("page or orderColumn or orderType or pagesize error");
         }
-        return new FilterLimitParams(page, pageSize, orderColumn, orderType, otherParams);
+        return new FilterLimitParams(page, pageSize, orderColumn, orderType, otherParams, likeField, likeValue);
     }
 
 
@@ -70,12 +93,12 @@ public class FilterLimitParams {
         this.pageSize = pageSize;
     }
 
-    public String getOrderColumn() {
-        return orderColumn;
+    public String getOrderField() {
+        return orderField;
     }
 
-    public void setOrderColumn(String orderColumn) {
-        this.orderColumn = orderColumn;
+    public void setOrderField(String orderField) {
+        this.orderField = orderField;
     }
 
     public String getOrderType() {
@@ -92,6 +115,22 @@ public class FilterLimitParams {
 
     public void setOtherParams(LinkedHashMap<String, Object> otherParams) {
         this.otherParams = otherParams;
+    }
+
+    public String getLikeField() {
+        return likeField;
+    }
+
+    public void setLikeField(String likeField) {
+        this.likeField = likeField;
+    }
+
+    public String getLikeValue() {
+        return likeValue;
+    }
+
+    public void setLikeValue(String likeValue) {
+        this.likeValue = likeValue;
     }
 
     public String[] getFieldArray() {

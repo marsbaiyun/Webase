@@ -138,15 +138,22 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
     protected ApiResult filterLimit(U user, FilterLimitParams params) {
         int page = params.getPage() < 1 ? 0 : params.getPage();
         int start = (page - 1) * params.getPageSize();
-        String[] filedArray = params.getFieldArray();
-        Object[] valueArray = params.getValueArray();
-        int allCount = service.filterCount(user, filedArray, valueArray);
-        List<T> bookList = service.filterLimit(user, start, params.getPageSize(), params.getOrderColumn(),
-                params.getOrderType(), filedArray, valueArray);
+        int allCount;
+        List<T> list;
+
+        if (params.getLikeField() != null) {
+            allCount = service.filterCountLike(user, params.getFieldArray(), params.getValueArray(), params.getLikeField(), params.getLikeValue());
+            list = service.filterLimitLike(user, start, params.getPageSize(), params.getOrderField(),
+                    params.getOrderType(), params.getFieldArray(), params.getValueArray(), params.getLikeField(), params.getLikeValue());
+        } else {
+            allCount = service.filterCount(user, params.getFieldArray(), params.getValueArray());
+            list = service.filterLimit(user, start, params.getPageSize(), params.getOrderField(),
+                    params.getOrderType(), params.getFieldArray(), params.getValueArray());
+        }
         ApiResult result = new ApiResult();
         result.setCode(ApiResult.SUCCESS);
         result.setPage(new ApiResult.Page(page, params.getPageSize(), allCount));
-        result.setResult(new ApiResult.Result<>(bookList));
+        result.setResult(new ApiResult.Result<>(list));
         return result;
     }
 
@@ -161,18 +168,6 @@ public abstract class PermissionBaseApi<U, T extends Pojo> {
         return result;
 
     }
-
-    protected ApiResult filterLimit(U user, int page, String orderColumn, String orderType, int pagesize, String[] fieldArray, Object[] valueArray) {
-
-        int allCount = service.filterCount(user, fieldArray, valueArray);
-        List<T> list = service.filterLimit(user, (page - 1) * pagesize, pagesize, orderColumn, orderType, fieldArray, valueArray);
-        ApiResult result = new ApiResult();
-        result.setCode(ApiResult.SUCCESS);
-        result.setPage(new ApiResult.Page(page, pagesize, allCount));
-        result.setResult(new ApiResult.Result<>(list));
-        return result;
-    }
-
 
     protected abstract U getAccessor(HttpServletRequest request);
 }
