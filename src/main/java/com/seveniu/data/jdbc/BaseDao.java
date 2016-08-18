@@ -375,6 +375,13 @@ public class BaseDao<T extends Pojo> {
         return holder.getKey().longValue();
     }
 
+    public List<T> in(String field, List values) {
+        String column = fieldToColumn(field);
+        Map<String, Object> params = Collections.singletonMap("ids", values);
+        NamedParameterJdbcTemplate namedTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+        return namedTemplate.query("SELECT * FROM " + tableName + " where " + column + " in (:ids) ", params, rowMapper);
+    }
+
     private String fieldToColumn(String field) {
         ClassInfo.Type all = classInfo.getAll();
         return all.getColumn(field);
@@ -408,4 +415,14 @@ public class BaseDao<T extends Pojo> {
         return tableName;
     }
 
+    public StringBuilder joiner(StringBuilder appendable, String[] parts, String separator) {
+        if (parts.length > 0) {
+            appendable.append(parts[0]);
+            for (int i = 1; i < parts.length; i++) {
+                appendable.append(separator);
+                appendable.append(parts[i]);
+            }
+        }
+        return appendable;
+    }
 }

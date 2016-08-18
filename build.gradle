@@ -29,11 +29,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    compile("org.springframework.boot:spring-boot-starter-parent:${springBootVersion}")
-
-    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
     compile("org.springframework.boot:spring-boot-starter-freemarker:${springBootVersion}")
-    compile("org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}")
+    compile ("org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}")
     compile('com.alibaba:fastjson:1.2.14')
 
     testCompile("org.springframework.boot:spring-boot-starter-test:${springBootVersion}")
