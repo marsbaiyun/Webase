@@ -55,7 +55,18 @@ configurations {
     deployerJars
 }
 
-
+uploadArchives {
+    repositories.mavenDeployer {
+        configuration = configurations.deployerJars
+        repository(url: "http://101.200.170.176:8081/nexus/content/repositories/releases/") {
+            authentication(userName: "deployment", password: "r[*N'/?=VB5#")
+        }
+//        pom.version = "1.0-SNAPSHOT"
+        pom.version = "0.0.14"
+        pom.groupId = "com.seveniu"
+        pom.artifactId = "web-base"
+    }
+}
 task wrapper(type: Wrapper) {
     def version = '2.10'
     gradleVersion = version
