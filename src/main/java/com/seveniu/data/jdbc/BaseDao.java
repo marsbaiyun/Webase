@@ -349,7 +349,6 @@ public class BaseDao<T extends Pojo> {
         jdbcTemplate.update(new PreparedStatementCreator() {
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                con.setAutoCommit(true);
                 StringBuilder sb = new StringBuilder("INSERT INTO ");
                 sb.append(tableName).append("(");
                 for (String s : columns) {
