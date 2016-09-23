@@ -32,7 +32,7 @@ public class BaseDao<T extends Pojo> {
     }
 
     public BaseDao(String tableName, DataSource dataSource, Class<T> tClass) {
-        this.tableName = tableName;
+        this.tableName = "`" + tableName + "`";
         this.jdbcTemplate = new JdbcTemplate(dataSource);
         this.rowMapper = new BeanPropertyRowMapper<>(tClass);
         this.classInfo = ClassInfo.create(tClass);
